@@ -43,7 +43,7 @@ def main(sc):
                     how='inner')
               .sort('product', 'date')
 
-    dfFinal.saveAsTextFile(sys.argv[2])
+    return dfFinal.saveAsTextFile(sys.argv[2])
 
 if __name__=="__main__":
     sc = SparkContext()
