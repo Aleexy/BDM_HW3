@@ -14,7 +14,7 @@ def parseCSV(idx, part):
     for p in csv.reader(part):
         yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
-rows = sc.textFile('../complaints_sample.csv').mapPartitionsWithIndex(parseCSV)
+rows = sc.textFile('complaints.csv').mapPartitionsWithIndex(parseCSV)
 df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
 dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
 dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
