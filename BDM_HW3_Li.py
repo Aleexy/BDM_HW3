@@ -14,7 +14,7 @@ def parseCSV(idx, part):
 def writeToCSV(row):
     return ','.join(str(item) for item in row)
 
-def main(sc):
+def main(sc, spark, sqlContext):
     rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
     df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
     print('load data')
@@ -53,4 +53,4 @@ if __name__=="__main__":
     sc = SparkContext()
     spark = SparkSession(sc)
     sqlContext = SQLContext(sc)
-    main(sc)
+    main(sc, spark, sqlContext)
