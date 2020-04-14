@@ -9,14 +9,14 @@ import csv
 def main(sc):
     spark = SparkSession(sc)
     sqlContext = SQLContext(sc)
-    
+
     def parseCSV(idx, part):
         if idx==0:
             next(part)
         for p in csv.reader(part):
             yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
-    rows = sc.textFile(str(sys.argv[1])).mapPartitionsWithIndex(parseCSV)
+    rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
     df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
     dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
     dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
@@ -43,7 +43,7 @@ def main(sc):
                     how='inner')
               .sort('product', 'date')
 
-    dfFinal.write.format("csv").save(str(sys.argv[2]))
+    dfFinal.write.format("csv").save(sys.argv[2])
 
 if __name__=="__main__":
     sc = SparkContext()
