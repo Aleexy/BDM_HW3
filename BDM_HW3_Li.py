@@ -20,9 +20,11 @@ def main(sc):
 
     rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
     df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
+    df.show(10)
     dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
     dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
                                                               "num_complaints")
+    dfComplaintsYearly.show()
 
     dfCompaniesCount = df.groupby(['date', 'product', 'company']).count()
     dfCompaniesYearly = dfCompaniesCount
