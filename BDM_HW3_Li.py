@@ -26,66 +26,32 @@ def main(sc):
     print('first mr')
 
     dfCompaniesCount = df.groupby(['date', 'product', 'company']).count()
-    dfCompaniesYearly = dfCompaniesCount
-                        .groupby(['date', 'product'])
-                        .count()
+    dfCompaniesYearly = dfCompaniesCount \
+                        .groupby(['date', 'product']) \
+                        .count() \
                         .sort('product')
-    dfCompaniesYearly = dfCompaniesYearly
+    dfCompaniesYearly = dfCompaniesYearly \
                         .withColumnRenamed("count", "num_companies")
     print('second mr')
 
     dfMax = dfCompaniesCount.groupBy(['date', 'product']).max('count')
     dfTotal = dfCompaniesCount.groupBy(['date', 'product']).sum('count')
     dfRatio = dfMax.join(dfTotal, ['date', 'product'], how='inner')
-    dfRatio = dfRatio.select('date', 'product', func.round(dfRatio[2]/dfRatio[3]*100)
-                     .cast('integer')
-                     .alias('percentage'))
+    dfRatio = dfRatio.select('date', 'product', func.round(dfRatio[2]/dfRatio[3]*100) \
+                     .cast('integer') \
+                     .alias('percentage')) \
 
-    dfFinal = dfComplaintsYearly
+    dfFinal = dfComplaintsYearly \
               .join(dfCompaniesYearly.join(dfRatio, ['date', 'product'], how='inner'),
                     ['date', 'product'],
-                    how='inner')
+                    how='inner') \
               .sort('product', 'date')
     print('third mr')
 
-    dfFinal.write.format("csv").save(sys.argv[2])
+    #dfFinal.write.format("csv").save(sys.argv[2])
+    dfFinal.rdd.map(writeToCSV).saveAsTextFile(sys.argv[2])
     print('output')
 
 if __name__=="__main__":
     sc = SparkContext()
-    #main(sc)
-    spark = SparkSession(sc)
-    sqlContext = SQLContext(sc)
-    rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
-    df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
-    print('load data')
-    dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
-    dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
-                                                              "num_complaints")
-    print('first mr')
-
-    dfCompaniesCount = df.groupby(['date', 'product', 'company']).count()
-    dfCompaniesYearly = dfCompaniesCount
-                        .groupby(['date', 'product'])
-                        .count()
-                        .sort('product')
-    dfCompaniesYearly = dfCompaniesYearly
-                        .withColumnRenamed("count", "num_companies")
-    print('second mr')
-
-    dfMax = dfCompaniesCount.groupBy(['date', 'product']).max('count')
-    dfTotal = dfCompaniesCount.groupBy(['date', 'product']).sum('count')
-    dfRatio = dfMax.join(dfTotal, ['date', 'product'], how='inner')
-    dfRatio = dfRatio.select('date', 'product', func.round(dfRatio[2]/dfRatio[3]*100)
-                     .cast('integer')
-                     .alias('percentage'))
-
-    dfFinal = dfComplaintsYearly
-              .join(dfCompaniesYearly.join(dfRatio, ['date', 'product'], how='inner'),
-                    ['date', 'product'],
-                    how='inner')
-              .sort('product', 'date')
-    print('third mr')
-
-    dfFinal.write.format("csv").save(sys.argv[2])
-    print('output')
+    main(sc)
