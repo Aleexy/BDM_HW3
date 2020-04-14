@@ -49,7 +49,7 @@ def main(sc):
               .sort('product', 'date')
     print('third mr')
 
-    output = dfFinal.map(writeToCSV).saveAsTextFile(sys.argv[2])
+    dfFinal.write.format("csv").save(sys.argv[2])
     print('output')
 
 if __name__=="__main__":
