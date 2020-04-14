@@ -2,6 +2,7 @@ from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
 from pyspark.sql import SQLContext
 import pyspark.sql.functions as func
+import sys
 import csv
 
 sc = SparkContext()
@@ -14,7 +15,7 @@ def parseCSV(idx, part):
     for p in csv.reader(part):
         yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
-rows = sc.textFile('complaints.csv').mapPartitionsWithIndex(parseCSV)
+rows = sc.textFile(str(sys.argv[0])).mapPartitionsWithIndex(parseCSV)
 df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
 dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
 dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
@@ -41,4 +42,4 @@ dfFinal = dfComplaintsYearly
                 how='inner')
           .sort('product', 'date')
 
-dfFinal.write.format("csv").save('out_file')
+dfFinal.write.format("csv").save(str(sys.argv[1]))
