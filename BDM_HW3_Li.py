@@ -5,16 +5,18 @@ import pyspark.sql.functions as func
 import sys
 import csv
 
+def parseCSV(idx, part):
+    if idx==0:
+        next(part)
+    for p in csv.reader(part):
+        yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
+
+def writeToCSV(row):
+    return ','.join(str(item) for item in row)
 
 def main(sc):
     spark = SparkSession(sc)
     sqlContext = SQLContext(sc)
-
-    def parseCSV(idx, part):
-        if idx==0:
-            next(part)
-        for p in csv.reader(part):
-            yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
     rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
     df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
@@ -43,7 +45,7 @@ def main(sc):
                     how='inner')
               .sort('product', 'date')
 
-    return dfFinal.saveAsTextFile(sys.argv[2])
+    output = dfFinal.map(writeToCSV).saveAsTextFile(sys.argv[2])
 
 if __name__=="__main__":
     sc = SparkContext()
