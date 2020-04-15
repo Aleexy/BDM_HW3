@@ -9,8 +9,8 @@ def parseCSV(idx, part):
     if idx==0:
         next(part)
     for p in csv.reader(part):
-        #if ',' in p[1]:
-        #    p[1] = '\"' + p[1]+ '\"'
+        if ',' in p[1]:
+            p[1] = '\"' + p[1]+ '\"'
         yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
 def writeToCSV(row):
