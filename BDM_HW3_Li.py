@@ -42,8 +42,8 @@ def main(sc):
                      .alias('percentage')) \
 
     dfFinal = dfComplaintsYearly \
-              .join(dfCompaniesYearly.join(dfRatio, ['product', 'date'], how='inner'),
-                    ['product', 'date'],
+              .join(dfCompaniesYearly.join(dfRatio, ['date', 'product'], how='inner'),
+                    ['date', 'product'],
                     how='inner') \
               .sort('product', 'date')
 
