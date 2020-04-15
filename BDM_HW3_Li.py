@@ -12,18 +12,17 @@ def parseCSV(idx, part):
         yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
 def writeToCSV(row):
-    return ','.join(str(item) for item in row)
+    return ', '.join(str(item) for item in row)
 
 def main(sc):
     spark = SparkSession(sc)
     sqlContext = SQLContext(sc)
     rows = sc.textFile(sys.argv[1]).mapPartitionsWithIndex(parseCSV)
     df = sqlContext.createDataFrame(rows, ('product', 'company', 'date'))
-    print('load data')
+
     dfComplaintsYearly = df.groupby(['date', 'product']).count().sort('product')
     dfComplaintsYearly = dfComplaintsYearly.withColumnRenamed("count",
                                                               "num_complaints")
-    print('first mr')
 
     dfCompaniesCount = df.groupby(['date', 'product', 'company']).count()
     dfCompaniesYearly = dfCompaniesCount \
@@ -32,7 +31,6 @@ def main(sc):
                         .sort('product')
     dfCompaniesYearly = dfCompaniesYearly \
                         .withColumnRenamed("count", "num_companies")
-    print('second mr')
 
     dfMax = dfCompaniesCount.groupBy(['date', 'product']).max('count')
     dfTotal = dfCompaniesCount.groupBy(['date', 'product']).sum('count')
@@ -46,11 +44,9 @@ def main(sc):
                     ['date', 'product'],
                     how='inner') \
               .sort('product', 'date')
-    print('third mr')
 
     #dfFinal.write.format("csv").save(sys.argv[2])
     dfFinal.rdd.map(writeToCSV).saveAsTextFile(sys.argv[2])
-    print('output')
 
 if __name__=="__main__":
     sc = SparkContext()
