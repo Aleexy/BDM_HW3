@@ -10,7 +10,7 @@ def parseCSV(idx, part):
         next(part)
     for p in csv.reader(part):
         if ',' in p[1]:
-            p[1] = '\"' + str(p[1]) + '\"'
+            p[1] = '\"' + p[1].lower() + '\"'
         yield (p[1].lower(), p[7].lower(), int(p[0][:4]))
 
 def writeToCSV(row):
